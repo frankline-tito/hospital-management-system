@@ -1,0 +1,13 @@
+<?php require 'config.php'; need(['nurse','doctor']); check();$doc=in_array(user()['role'],['doctor','admin']);
+if($_SERVER['REQUEST_METHOD']==='POST'){
+  if(isset($_POST['patient'])){$pdo->prepare('INSERT INTO telemedicine_requests(facility_id,patient_id,specialty,summary,created_by) VALUES(?,?,?,?,?)')->execute([fscope(),(int)$_POST['patient'],trim($_POST['specialty']),trim($_POST['summary']),user()['id']]);audit('telemedicine request');}
+  elseif($doc&&in_array($_POST['status'],['accepted','completed','cancelled'])){$pdo->prepare('UPDATE telemedicine_requests SET status=?,specialist_id=?,scheduled_at=?,notes=? WHERE id=?')->execute([$_POST['status'],user()['id'],$_POST['when']?:null,$_POST['notes'],(int)$_POST['id']]);audit('telemedicine update '.(int)$_POST['id']);}
+  header('Location: telemed.php');exit;}
+head('Telemedicine');$pts=$pdo->query('SELECT id,patient_no,first_name,last_name FROM patients ORDER BY id DESC LIMIT 200')->fetchAll();?>
+<div class=card><h3>Request specialist consultation</h3><form method=post class=g><?=field()?><div><label>Patient</label><select name=patient><?php foreach($pts as $p)echo '<option value='.$p['id'].'>'.e($p['patient_no'].' '.$p['first_name'].' '.$p['last_name']);?></select></div>
+<div><label>Specialty</label><input name=specialty placeholder="e.g. Paediatrics" required></div><div style="grid-column:1/-1"><label>Clinical summary</label><textarea name=summary required></textarea><button>Send request</button></div></form></div>
+<div class=card><h3>Requests</h3><table><tr><th>Patient<th>Specialty<th>Summary<th>Status<th>Specialist response</tr>
+<?php $f=fscope();$sql='SELECT t.*,p.first_name,p.last_name,f.name fn FROM telemedicine_requests t JOIN patients p ON p.id=t.patient_id LEFT JOIN facilities f ON f.id=t.facility_id'.(($f&&!$doc)?' WHERE t.facility_id='.$f:'').' ORDER BY t.id DESC LIMIT 50';
+foreach($pdo->query($sql) as $t):?><tr><td><?=e($t['first_name'].' '.$t['last_name'])?><br><small><?=e($t['fn'])?></small><td><?=e($t['specialty'])?><td><?=e($t['summary'])?><td><?=$t['status']?><?=$t['scheduled_at']?'<br>'.substr($t['scheduled_at'],0,16):''?>
+<td><?php if($doc&&!in_array($t['status'],['completed','cancelled'])):?><form method=post><?=field()?><input type=hidden name=id value=<?=$t['id']?>><select name=status><option>accepted<option>completed<option>cancelled</select>
+<input type=datetime-local name=when><textarea name=notes placeholder="Advice / notes"><?=e($t['notes'])?></textarea><button style="margin:0">Save</button></form><?php else:echo e($t['notes']);endif;?></tr><?php endforeach;?></table></div><?php foot();

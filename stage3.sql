@@ -1,0 +1,5 @@
+USE hms;
+CREATE TABLE lab_tests(id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(100) NOT NULL UNIQUE);
+CREATE TABLE lab_orders(id INT AUTO_INCREMENT PRIMARY KEY,visit_id INT NOT NULL,test_id INT NOT NULL,status ENUM('pending','done') DEFAULT 'pending',result TEXT,abnormal TINYINT DEFAULT 0,ordered_by INT,done_by INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,done_at DATETIME NULL,FOREIGN KEY(visit_id) REFERENCES visits(id),FOREIGN KEY(test_id) REFERENCES lab_tests(id));
+CREATE TABLE drugs(id INT AUTO_INCREMENT PRIMARY KEY,name VARCHAR(100) NOT NULL UNIQUE,unit VARCHAR(20),stock INT DEFAULT 0,reorder_level INT DEFAULT 10);
+CREATE TABLE prescriptions(id INT AUTO_INCREMENT PRIMARY KEY,visit_id INT NOT NULL,drug_id INT NOT NULL,dose VARCHAR(80),duration VARCHAR(40),qty INT NOT NULL,status ENUM('pending','dispensed') DEFAULT 'pending',prescribed_by INT,dispensed_by INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(visit_id) REFERENCES visits(id),FOREIGN KEY(drug_id) REFERENCES drugs(id));

@@ -1,0 +1,3 @@
+USE hms;
+CREATE TABLE triage(id INT AUTO_INCREMENT PRIMARY KEY,visit_id INT NOT NULL UNIQUE,temp DECIMAL(4,1),bp VARCHAR(10),pulse INT,resp INT,spo2 INT,weight DECIMAL(5,1),height DECIMAL(5,1),complaint VARCHAR(255),nurse_id INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(visit_id) REFERENCES visits(id));
+CREATE TABLE consultations(id INT AUTO_INCREMENT PRIMARY KEY,visit_id INT NOT NULL UNIQUE,history TEXT,examination TEXT,diagnosis VARCHAR(255) NOT NULL,icd10 VARCHAR(10),plan TEXT,outcome ENUM('discharge','lab','pharmacy','admit','refer') NOT NULL,doctor_id INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,FOREIGN KEY(visit_id) REFERENCES visits(id));

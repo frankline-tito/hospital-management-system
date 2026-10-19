@@ -1,0 +1,3 @@
+<FilesMatch "^(secrets\.php|secrets\.sample\.php|otp\.log|.*\.sql)$">
+Require all denied
+</FilesMatch>

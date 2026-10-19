@@ -1,0 +1,7 @@
+USE hms;
+CREATE TABLE IF NOT EXISTS departments(id INT AUTO_INCREMENT PRIMARY KEY,slug VARCHAR(30) NOT NULL UNIQUE,name VARCHAR(60) NOT NULL,icon VARCHAR(10),sort INT DEFAULT 0) DEFAULT CHARSET=utf8mb4;
+INSERT IGNORE INTO departments(slug,name,icon,sort) VALUES
+('admission','Admission','🛏️',1),('triage','Triage','🩺',2),('pharmacy','Pharmacy','💊',3),('plaster-room','Plaster Room','🦴',4),('orthotrauma','Orthotrauma','🦿',5),('dental','Dental','🦷',6),('dermatology','Dermatology Room','🧴',7),('laboratory','Laboratory','🧪',8),('xray','X-ray','☢️',9),('ct-scan','CT Scan','🌀',10),('ccc','CCC','🎗️',11),('labour-ward','Labour Ward','🤱',12),('postnatal-ward','Post Natal Ward','👶',13),('antenatal-ward','Ante Natal Ward','🤰',14),('icu','ICU','🚨',15),('hdu','HDU','📟',16),('surgical-theatre','Surgical Theatre','⚕️',17),('labour-theatre','Labour Ward Theatre','🏥',18),('morgue','Morgue','🕊️',19),('ent','ENT','👂',20),('billing','Billing','💳',21);
+ALTER TABLE visits ADD COLUMN IF NOT EXISTS dept_id INT NULL;
+CREATE TABLE IF NOT EXISTS patient_transfers(id INT AUTO_INCREMENT PRIMARY KEY,visit_id INT NOT NULL,from_dept INT NULL,to_dept INT NOT NULL,moved_by INT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS patient_notes(id INT AUTO_INCREMENT PRIMARY KEY,patient_id INT NOT NULL,visit_id INT NOT NULL,dept_id INT NULL,author_id INT NOT NULL,title VARCHAR(150),body MEDIUMTEXT NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);

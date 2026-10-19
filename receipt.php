@@ -1,0 +1,10 @@
+<?php require 'config.php'; need();
+$s=$pdo->prepare('SELECT y.*,i.total,i.paid,i.visit_id,i.patient_id,u.name cashier FROM payments y JOIN invoices i ON i.id=y.invoice_id LEFT JOIN users u ON u.id=y.received_by WHERE y.id=?');$s->execute([(int)($_GET['payment']??0)]);$y=$s->fetch();if(!$y)die('Receipt not found.');
+$p=$pdo->prepare('SELECT * FROM patients WHERE id=?');$p->execute([$y['patient_id']]);$p=$p->fetch();
+$v=$pdo->prepare('SELECT v.*,d.name dn FROM visits v LEFT JOIN departments d ON d.id=v.dept_id WHERE v.id=?');$v->execute([(int)$y['visit_id']]);$v=$v->fetch()?:null;
+echo doc_open('Payment receipt R'.str_pad($y['id'],6,'0',STR_PAD_LEFT),$p,$v);
+$its=$pdo->prepare('SELECT * FROM invoice_items WHERE invoice_id=?');$its->execute([$y['invoice_id']]);
+echo '<table><tr><th>Item<th class=r>KES</tr>';foreach($its as $t)echo '<tr><td>'.e($t['description']).'<td class=r>'.number_format($t['amount'],2);
+echo '<tr><th>Invoice total<th class=r>'.number_format($y['total'],2).'</table><table><tr><td>Amount received<th class=r>KES '.number_format($y['amount'],2).'<tr><td>Method<td class=r>'.e(strtoupper($y['method'])).'<tr><td>Reference<td class=r>'.e($y['mpesa_ref'].$y['bank_name'].' '.$y['bank_ref']).'<tr><td>Paid so far / balance<td class=r>'.number_format($y['paid'],2).' / '.number_format($y['total']-$y['paid'],2).'<tr><td>Time<td class=r>'.e($y['created_at']).'<tr><td>Received by<td class=r>'.e($y['cashier']).'</table>';
+if($v)echo '<div class=box><b>Reason for visit:</b> '.e($v['reason']?:'not recorded').'<br><b>Go to:</b> '.e($v['dn']?:'Consultation').'<br>Show this receipt to the clinician. The details are also in the system.</div>';
+echo doc_close('trace.php'.($v?'?pid='.$p['id']:''));if(isset($_GET['auto']))echo '<script>onload=function(){setTimeout(print,400)}</script>';
